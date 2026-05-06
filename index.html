@@ -33,6 +33,10 @@
     overflow-x: hidden;
     cursor: none;
   }
+  @media (hover: none), (pointer: coarse) {
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none !important; }
+  }
 
   /* ── Custom Cursor ── */
   .cursor {
@@ -69,8 +73,8 @@
     overflow: hidden;
   }
   #intro.hidden {
-    animation: introFadeOut 1s cubic-bezier(0.76,0,0.24,1) forwards;
-    animation-delay: 2.2s;
+    animation: introFadeOut 0.7s cubic-bezier(0.76,0,0.24,1) forwards;
+    animation-delay: 1.0s;
   }
   @keyframes introFadeOut {
     0%   { opacity: 1; transform: scale(1); }
@@ -131,7 +135,7 @@
     gap: 10px;
     opacity: 0;
     animation: fadeIn 0.8s ease forwards;
-    animation-delay: 3.6s;
+    animation-delay: 2.2s;
   }
   .explore-btn {
     display: flex;
@@ -277,7 +281,7 @@
     z-index: 10;
     opacity: 0;
     animation: heroLogoIn 1s cubic-bezier(0.16,1,0.3,1) forwards;
-    animation-delay: 3.2s;
+    animation-delay: 1.8s;
   }
   @keyframes heroLogoIn {
     from { opacity: 0; transform: translate(-50%, 10px); }
@@ -358,7 +362,7 @@
     opacity: 0;
     transform: translateY(28px);
     animation: fadeUp 1.2s cubic-bezier(0.16,1,0.3,1) forwards;
-    animation-delay: 3.0s;
+    animation-delay: 1.6s;
   }
   @keyframes fadeUp {
     to { opacity: 1; transform: translateY(0); }
@@ -373,7 +377,7 @@
     margin-bottom: 24px;
     opacity: 0;
     animation: fadeUp 1s ease forwards;
-    animation-delay: 3.2s;
+    animation-delay: 1.8s;
   }
   .hero-title {
     font-family: 'Cormorant Garamond', serif;
@@ -414,7 +418,7 @@
     gap: 10px;
     opacity: 0;
     animation: fadeIn 1s ease forwards;
-    animation-delay: 3.8s;
+    animation-delay: 2.4s;
   }
   @keyframes fadeIn { to { opacity: 1; } }
   .scroll-hint span {
@@ -428,7 +432,7 @@
     height: 48px;
     background: linear-gradient(to bottom, var(--gold), transparent);
     animation: scrollPulse 2s ease-in-out infinite;
-    animation-delay: 3.9s;
+    animation-delay: 2.5s;
   }
   @keyframes scrollPulse {
     0%, 100% { opacity: 0.3; transform: scaleY(1); }
@@ -1383,36 +1387,37 @@
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.scrollTo(0, 0);
 
-  // Custom cursor
-  const cursor = document.getElementById('cursor');
-  const ring = document.getElementById('cursorRing');
-  let mx = 0, my = 0, rx = 0, ry = 0;
-  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-  function animCursor() {
-    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
-    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-    requestAnimationFrame(animCursor);
+  // Custom cursor (desktop only)
+  const isTouchDevice = () => window.matchMedia('(hover: none), (pointer: coarse)').matches || ('ontouchstart' in window);
+  if (!isTouchDevice()) {
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    function animCursor() {
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animCursor);
+    }
+    animCursor();
+    document.querySelectorAll('a, .menu-card, button').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursor.style.width = '14px'; cursor.style.height = '14px'; ring.style.width = '48px'; ring.style.height = '48px'; ring.style.opacity = '0.5'; });
+      el.addEventListener('mouseleave', () => { cursor.style.width = '8px'; cursor.style.height = '8px'; ring.style.width = '32px'; ring.style.height = '32px'; ring.style.opacity = '1'; });
+    });
   }
-  animCursor();
-  document.querySelectorAll('a, .menu-card, button').forEach(el => {
-    el.addEventListener('mouseenter', () => { cursor.style.width = '14px'; cursor.style.height = '14px'; ring.style.width = '48px'; ring.style.height = '48px'; ring.style.opacity = '0.5'; });
-    el.addEventListener('mouseleave', () => { cursor.style.width = '8px'; cursor.style.height = '8px'; ring.style.width = '32px'; ring.style.height = '32px'; ring.style.opacity = '1'; });
-  });
 
   // Intro fade-out
   const intro = document.getElementById('intro');
   intro.classList.add('hidden');
-  setTimeout(() => { intro.style.display = 'none'; }, 3400);
+  setTimeout(() => { intro.style.display = 'none'; }, 1800);
 
   // Phone button — tel: on mobile, modal on desktop
   const phoneBtn = document.getElementById('phoneBtn');
   const phoneModal = document.getElementById('phoneModal');
   const phoneModalClose = document.getElementById('phoneModalClose');
-  const isMobile = () => window.matchMedia('(max-width: 768px)').matches || ('ontouchstart' in window);
-
   phoneBtn.addEventListener('click', e => {
-    if (!isMobile()) {
+    if (!isTouchDevice()) {
       e.preventDefault();
       phoneModal.classList.add('open');
     }
